@@ -17,8 +17,8 @@ class ScrapyjdazwPipeline(object):
         # TODO: make settings configurable through settings
         self.dbpool = adbapi.ConnectionPool('MySQLdb',
                 db='jddata',
-                user='root',
-                passwd='123456',
+                user='spider',
+                passwd='spider1234',
                 cursorclass=MySQLdb.cursors.DictCursor,
                 charset='utf8',
                 use_unicode=True
@@ -32,30 +32,36 @@ class ScrapyjdazwPipeline(object):
                 result += it.strip()
             item["pinfo"] = result
         
-
-
-        #query = self.dbpool.runInteraction(self._conditional_insert, item)
-        #query.addErrback(self.handle_error)
+        query = self.dbpool.runInteraction(self._conditional_insert, item)
+        query.addErrback(self.handle_error)
 
         return item
 
     def _conditional_insert(self, tx, item):
         # create record if doesn't exist. 
         # all this block run on it's own thread
-        tx.execute("select * from sites where url = %s", (item['url'][0], ))
-        result = tx.fetchone()
-        if result:
-            log.msg("Item already stored in db: %s" % item, level=log.DEBUG)
+
+        if item.has_key("pinfo"):
+            tx.execute(\
+                "insert into product_table (pro_id, pro_info, pro_price) "
+                "values (%s, %s, %s)",
+                (    item['proid'],
+                     item['pinfo'],
+                     item['pricejd'],
+                 )
+            )
         else:
             tx.execute(\
-                "insert into sites (name, url, description, created) "
-                "values (%s, %s, %s, %s)",
-                (item['name'][0],
-                 item['url'][0],
-                 item['description'][0],
-                 time.time())
+                "insert into comment_table (pro_id, user, time, score, comment) "
+                "values (%s, %s, %s, %s, %s)",
+                (    item['proid'],
+                     item['user'],
+                     item['time'],
+                     item['score'],
+                     item['comment'],
+                 )
             )
-            log.msg("Item stored in db: %s" % item, level=log.DEBUG)
 
+        log.msg("Item stored in db: %s" % item["proid"], level=log.INFO)
     def handle_error(self, e):
         log.err(e)
