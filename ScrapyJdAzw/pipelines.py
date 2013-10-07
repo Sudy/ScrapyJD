@@ -16,6 +16,7 @@ class ScrapyjdazwPipeline(object):
         # @@@ hardcoded db settings
         # TODO: make settings configurable through settings
         self.dbpool = adbapi.ConnectionPool('MySQLdb',
+                host='192.168.1.153'
                 db='jddata',
                 user='spider',
                 passwd='spider1234',

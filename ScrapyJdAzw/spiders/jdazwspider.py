@@ -15,7 +15,7 @@ class JdAzwSpider(CrawlSpider):
 
 
     #rules = (
-        #Rule(SgmlLinkExtractor(allow=("http://m\.jd\.com/category/*"),restrict_xpaths='//div[@class="mc"]')),
+    #    Rule(SgmlLinkExtractor(allow=("http://m\.jd\.com/category/*"),restrict_xpaths='//div[@class="mc"]'),callback='parse_category'),
         #Rule(SgmlLinkExtractor(allow=("http://m\.jd\.com/products/*",)),callback='parse_products'),
         #Rule(SgmlLinkExtractor(allow=("http://m\.jd\.com/product/*",)),callback='parse_product'),        
         #Rule(SgmlLinkExtractor(allow=("http://m\.jd\.com/comments/*",)),callback='parse_comment'),
@@ -23,8 +23,19 @@ class JdAzwSpider(CrawlSpider):
     #)
 
     def start_requests(self):
-        yield Request(url='http://m.jd.com/ware/comments.action?wareId=1021960473&score=5&page=15',callback=self.parse_ware)
+        yield Request(url='http://m.jd.com/category/1319.html',callback=self.parse_category)
     
+    def parse_category(self,response):
+        hxs = HtmlXPathSelector(response)
+        try:
+            cates = hxs.select('//div[@class="mc"]/a/@href')
+            for cate in cates:
+                url = "http://m.jd.com" + cate.extract()
+                self.log(url)
+                yield Request(url=url,callback=self.parse_products)
+        except:
+            pass
+
     def parse_products(self,response):
         hxs = HtmlXPathSelector(response)
         try:

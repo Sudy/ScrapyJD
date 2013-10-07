@@ -27,5 +27,5 @@ USER_AGENT = 'jdspider'
 DOWNLOAD_TIMEOUT = 10
 
 # Specify the host and port to use when connecting to Redis (optional).
-REDIS_HOST = '172.17.161.101'
+REDIS_HOST = '192.168.1.152'
 REDIS_PORT = 6379
